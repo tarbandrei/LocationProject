@@ -1,8 +1,11 @@
 package com.devacademy.tarbandrei.locationproject.activities;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -21,7 +24,7 @@ import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-public class WeatherActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class WeatherActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final String TAG = WeatherActivity.class.getName();
 
@@ -53,6 +56,16 @@ public class WeatherActivity extends AppCompatActivity implements GoogleApiClien
 
     @Override
     public void onConnected(Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (lastLocation != null) {
             longitudeCoordinate = String.valueOf(lastLocation.getLongitude());
@@ -80,9 +93,7 @@ public class WeatherActivity extends AppCompatActivity implements GoogleApiClien
                     TextView longitude = (TextView) findViewById(R.id.activity_weather_coordinate_longitude_text_view);
                     TextView latitude = (TextView) findViewById(R.id.activity_weather_coordinate_latitude_text_view);
                     name.setText(response.body().getName() + ", ");
-                    if (country != null) {
-                        country.setText(response.body().getSys().getCountry());
-                    }
+                    country.setText(response.body().getSys().getCountry());
                     temperature.setText((double) Math.round(response.body().getMain().getTemp() - 273.15) + "°C, ");
                     main.setText(response.body().getWeather()[0].getMain());
                     windSpeed.setText(response.body().getWind().getSpeed() + " m/s");
